@@ -6,5 +6,7 @@ export type Transaction = {
 	description: string;
 	status: "pending" | "completed" | "failed";
 	type: "debit" | "credit";
-	to: string;
+	stakeholder: string;
+	stakeholderId: number;
+	stakeholderGuid: string;
 };

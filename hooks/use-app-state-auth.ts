@@ -1,13 +1,15 @@
 import * as LocalAuthentication from "expo-local-authentication";
-import { usePathname, useRouter } from "expo-router";
+import { LinkProps, useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
+
 export const useAppStateAuth = () => {
 	const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
-	const [lastActiveRoute, setLastActiveRoute] = useState<string>("/");
+	const [lastActiveRoute, setLastActiveRoute] = useState<LinkProps["href"]>("/");
 	const [lastActiveParams, setLastActiveParams] = useState<unknown>(null);
 	const router = useRouter();
-	const pathname = usePathname();
+	const pathname = usePathname() as LinkProps["href"];
+	const params = useLocalSearchParams();
 	useEffect(() => {
 		const handleAppStateChange = async (nextAppState: AppStateStatus) => {
 			console.log(pathname);
@@ -20,18 +22,20 @@ export const useAppStateAuth = () => {
 				const isLocalAuthenticated = authResult.success;
 				if (!isLocalAuthenticated) {
 					router.replace("/");
+				} else {
+					router.push(lastActiveRoute);
 				}
-			} else {
+			} else if (appState === "active" && nextAppState === "inactive") {
+				setLastActiveRoute(pathname);
+				setLastActiveParams(params);
 			}
 
 			setAppState(nextAppState);
 		};
 
 		const subscription = AppState.addEventListener("change", handleAppStateChange);
-
-		// Cleanup the subscription
 		return () => {
 			subscription.remove();
 		};
-	}, [appState]);
+	}, [appState, pathname]);
 };

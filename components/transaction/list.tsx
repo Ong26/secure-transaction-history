@@ -1,54 +1,78 @@
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import React, { useMemo } from "react";
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from "react-native";
 
 import { Text, View } from "@/components/themed";
+import { tintColorLight } from "@/constants/colors";
 import { Padding } from "@/constants/style";
-import { generateTransactionList } from "@/data/transaction";
-import { Transaction } from "@/models/transaction";
-
-type Props = {};
-
-const data = generateTransactionList(50);
+import { useTransactionListInfiniteQuery } from "@/services/queries/transaction";
+import { generateArray } from "@/utils";
+import ErrorScreen from "./error";
+import { ListItem, SkeletonListItem } from "./list-item";
+const SkeletonLength = 3;
 const List = () => {
-	return (
-		<View style={styles.container}>
-			<FlatList
-				data={data}
-				contentInsetAdjustmentBehavior="automatic"
-				style={styles.container}
-				contentContainerStyle={styles.contentContainer}
-				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => <ListItem item={item} />}
-				// ListHeaderComponent={<Text>Header</Text>}
-				// stickyHeaderIndices={[0]}
-			/>
-		</View>
-	);
+	const { data, error, isLoading, isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage } =
+		useTransactionListInfiniteQuery();
+	const transactionList = useMemo(() => {
+		if (isLoading) return [];
+		const pages = data?.pages.flatMap((page) => page.data);
+		return pages;
+	}, [isLoading, isRefetching, isFetchingNextPage, error]);
+	console.log(error);
+	if (!!error) return <ErrorScreen refetch={refetch} />;
+	else if (isLoading)
+		return (
+			<>
+				{generateArray(SkeletonLength).map((x: unknown, i: number) => {
+					return <SkeletonListItem key={i} />;
+				})}
+			</>
+		);
+	else
+		return (
+			<View style={styles.container}>
+				<FlatList
+					style={styles.container}
+					contentContainerStyle={{ paddingHorizontal: Padding.md }}
+					data={transactionList}
+					keyExtractor={(item) => item.guid}
+					automaticallyAdjustContentInsets
+					onEndReached={() => fetchNextPage()}
+					contentInsetAdjustmentBehavior="automatic"
+					refreshControl={<RefreshControl tintColor={tintColorLight} refreshing={isRefetching} onRefresh={refetch} />}
+					renderItem={({ item }) => <ListItem item={item} />}
+					onEndReachedThreshold={0.15}
+					ListFooterComponent={
+						<ListFooterComponent
+							isLoading={isLoading}
+							isFetchingNextPage={isFetchingNextPage}
+							hasNextPage={hasNextPage}
+						/>
+					}
+				/>
+			</View>
+		);
 };
-
-type ListItemProps = {
-	item: Transaction;
+type ListFooterComponentProps = {
+	isLoading: boolean;
+	isFetchingNextPage: boolean;
+	hasNextPage: boolean;
 };
-const ListItem = (props: ListItemProps) => {
-	const { item } = props;
-	return (
-		<View style={styles.listItem}>
-			<Text>List Item {item.id}</Text>
-		</View>
-	);
+const ListFooterComponent = ({ isLoading, isFetchingNextPage, hasNextPage }: ListFooterComponentProps) => {
+	if (isLoading) return <></>;
+	else if (isFetchingNextPage)
+		return (
+			<View style={{ paddingBlock: 32 }}>
+				<ActivityIndicator color={tintColorLight} />
+			</View>
+		);
+	else if (!hasNextPage)
+		return <Text style={{ fontWeight: 300, textAlign: "center", paddingBlock: 16 }}>No more transaction</Text>;
+	return <></>;
 };
-
 export default List;
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-	},
-	contentContainer: {
-		gap: Padding.md,
-	},
-	listItem: {
-		backgroundColor: "red",
-		padding: Padding.md,
 	},
 });
