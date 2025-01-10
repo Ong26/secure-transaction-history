@@ -1,13 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const AuthUser = {
-	id: 1,
-	name: "John Doe",
-	email: "john.doe@example.com",
-	phone: "1234567890",
-	guid: uuidv4(),
-};
-
 export const TransactionUsers = [
 	{
 		id: 2,

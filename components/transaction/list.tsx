@@ -6,7 +6,7 @@ import { tintColorLight } from "@/constants/colors";
 import { Padding } from "@/constants/style";
 import { useTransactionListInfiniteQuery } from "@/services/queries/transaction";
 import { generateArray } from "@/utils";
-import ErrorScreen from "./error";
+import ErrorBoundaryComponent from "../error-boundary";
 import { ListItem, SkeletonListItem } from "./list-item";
 const SkeletonLength = 3;
 const List = () => {
@@ -17,9 +17,8 @@ const List = () => {
 		const pages = data?.pages.flatMap((page) => page.data);
 		return pages;
 	}, [isLoading, isRefetching, isFetchingNextPage, error]);
-	console.log(error);
-	if (!!error) return <ErrorScreen refetch={refetch} />;
-	else if (isLoading)
+
+	if (isLoading)
 		return (
 			<>
 				{generateArray(SkeletonLength).map((x: unknown, i: number) => {
@@ -29,27 +28,30 @@ const List = () => {
 		);
 	else
 		return (
-			<View style={styles.container}>
-				<FlatList
-					style={styles.container}
-					contentContainerStyle={{ paddingHorizontal: Padding.md }}
-					data={transactionList}
-					keyExtractor={(item) => item.guid}
-					automaticallyAdjustContentInsets
-					onEndReached={() => fetchNextPage()}
-					contentInsetAdjustmentBehavior="automatic"
-					refreshControl={<RefreshControl tintColor={tintColorLight} refreshing={isRefetching} onRefresh={refetch} />}
-					renderItem={({ item }) => <ListItem item={item} />}
-					onEndReachedThreshold={0.15}
-					ListFooterComponent={
-						<ListFooterComponent
-							isLoading={isLoading}
-							isFetchingNextPage={isFetchingNextPage}
-							hasNextPage={hasNextPage}
-						/>
-					}
-				/>
-			</View>
+			<ErrorBoundaryComponent error={error} refetch={refetch}>
+				<View style={styles.container}>
+					<FlatList
+						style={styles.container}
+						contentContainerStyle={styles.contentContainer}
+						data={transactionList}
+						keyExtractor={(item) => item.guid}
+						automaticallyAdjustContentInsets
+						onEndReached={() => fetchNextPage()}
+						contentInsetAdjustmentBehavior="automatic"
+						refreshControl={<RefreshControl tintColor={tintColorLight} refreshing={isRefetching} onRefresh={refetch} />}
+						renderItem={({ item }) => (isRefetching ? <SkeletonListItem /> : <ListItem item={item} />)}
+						onEndReachedThreshold={0.15}
+						ListEmptyComponent={<Text>No transaction found</Text>}
+						ListFooterComponent={
+							<ListFooterComponent
+								isLoading={isLoading}
+								isFetchingNextPage={isFetchingNextPage}
+								hasNextPage={hasNextPage}
+							/>
+						}
+					/>
+				</View>
+			</ErrorBoundaryComponent>
 		);
 };
 type ListFooterComponentProps = {
@@ -61,12 +63,11 @@ const ListFooterComponent = ({ isLoading, isFetchingNextPage, hasNextPage }: Lis
 	if (isLoading) return <></>;
 	else if (isFetchingNextPage)
 		return (
-			<View style={{ paddingBlock: 32 }}>
+			<View style={styles.loadingContainer}>
 				<ActivityIndicator color={tintColorLight} />
 			</View>
 		);
-	else if (!hasNextPage)
-		return <Text style={{ fontWeight: 300, textAlign: "center", paddingBlock: 16 }}>No more transaction</Text>;
+	else if (!hasNextPage) return <Text style={styles.noMoreText}>No more transaction</Text>;
 	return <></>;
 };
 export default List;
@@ -74,5 +75,16 @@ export default List;
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+	},
+	contentContainer: {
+		paddingInline: Padding.sm,
+	},
+	loadingContainer: {
+		paddingBlock: 32,
+	},
+	noMoreText: {
+		fontWeight: "300",
+		textAlign: "center",
+		paddingBlock: 16,
 	},
 });

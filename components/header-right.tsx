@@ -1,14 +1,21 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { Appearance, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 
-import { View } from "@/components/themed";
+import { Padding } from "@/constants/style";
 import { FontAwesome } from "@expo/vector-icons";
 
 const HeaderRight = () => {
+	const colorScheme = useColorScheme();
+	const setColorScheme = (scheme: "light" | "dark") => {
+		Appearance.setColorScheme(scheme);
+	};
+	const toggleColorScheme = () => {
+		setColorScheme(colorScheme === "light" ? "dark" : "light");
+	};
 	return (
-		<View style={styles.container}>
-			<FontAwesome name="user" size={24} color="white" />
-		</View>
+		<TouchableOpacity style={styles.container} onPress={toggleColorScheme}>
+			<FontAwesome name={colorScheme === "light" ? "sun-o" : "moon-o"} size={28} color={"white"} />
+		</TouchableOpacity>
 	);
 };
 
@@ -16,7 +23,6 @@ export default HeaderRight;
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: "transparent",
-		paddingRight: 10,
+		paddingRight: Padding.sm,
 	},
 });

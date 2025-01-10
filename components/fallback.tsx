@@ -1,16 +1,10 @@
-import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import { FontAwesome } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
-import { Text, View, useThemeColor } from "../themed";
-
-type Props = {
-	title?: string;
-	refetch: () => void;
-};
-
-const ErrorScreen = ({ refetch, title = "Error" }: Props) => {
+import { Text, View, useThemeColor } from "./themed";
+export const ErrorFallback = ({ refetch, error }: { refetch: () => void; error: Error | null }) => {
 	const bgColor = useThemeColor({}, "background");
 	const textColor = useThemeColor({}, "text");
+	const title = error?.message || "Uh oh! Something went wrong";
 	return (
 		<ScrollView
 			contentContainerStyle={styles.contentContainer}
@@ -20,14 +14,12 @@ const ErrorScreen = ({ refetch, title = "Error" }: Props) => {
 			<TouchableOpacity onPress={refetch} activeOpacity={0.8}>
 				<View style={styles.refetchContainer}>
 					<Text style={styles.refetchText}>Please tap to retry</Text>
-					<MaterialIcons name="refresh" size={24} color={textColor} />
+					<FontAwesome name="refresh" size={24} color={textColor} />
 				</View>
 			</TouchableOpacity>
 		</ScrollView>
 	);
 };
-
-export default ErrorScreen;
 
 const styles = StyleSheet.create({
 	container: {

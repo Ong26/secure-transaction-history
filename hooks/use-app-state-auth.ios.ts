@@ -16,7 +16,7 @@ export const useAppStateAuth = () => {
 				const authResult = await LocalAuthentication.authenticateAsync(LocalAuthOptions);
 				const isLocalAuthenticated = authResult.success;
 				setIsLocalAuthenticated(isLocalAuthenticated);
-			} else if (appState === "active" && nextAppState === "background") {
+			} else if (appState === "active" && (nextAppState === "inactive" || nextAppState === "background")) {
 				setSecureMask(true);
 			}
 

@@ -3,9 +3,10 @@ import { tintColorLight } from "@/constants/colors";
 import { Padding } from "@/constants/style";
 import { Transaction } from "@/models/transaction";
 import { format } from "date-fns";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
+import MaskingText from "../masking-text";
 import Skeleton from "../skeleton";
 
 type ListItemProps = {
@@ -14,50 +15,58 @@ type ListItemProps = {
 const ListItem = (props: ListItemProps) => {
 	const { item } = props;
 	const textColor = useThemeColor({}, "text");
-	return (
-		<Link href={`/transaction/detail/${item.guid}`} asChild>
-			<Pressable style={styles.listItem}>
-				<View style={styles.container}>
-					<View style={styles.leftColumn}>
-						<Text style={styles.dateText}>{format(item.date, "dd MMM, yyyy HH:mm")}</Text>
-						<View style={styles.typeContainer}>
-							{item.type === "debit" ? (
-								<Text style={[styles.boldText, { color: tintColorLight }]}>Debit </Text>
-							) : (
-								<Text style={styles.boldText}>Credit </Text>
-							)}
-							<Text style={[styles.boldText, styles.stakeholderText]} numberOfLines={1}>
-								{item.stakeholder}
-							</Text>
-						</View>
+	const router = useRouter();
 
-						<View style={styles.descriptionContainer}>
-							<Text style={styles.descriptionText} numberOfLines={2}>
-								{item.description}
-							</Text>
-						</View>
+	return (
+		<Pressable style={styles.listItem} onPress={() => router.push(`/transaction/detail/${item.guid}`)}>
+			<View style={styles.container}>
+				<View style={styles.leftColumn}>
+					<Text style={styles.dateText}>{format(item.date, "dd MMM, yyyy HH:mm")}</Text>
+					<View style={styles.typeContainer}>
+						<MaskingText>
+							<>
+								{item.type === "debit" ? (
+									<Text style={[styles.boldText, { color: tintColorLight }]}>Debit </Text>
+								) : (
+									<Text style={styles.boldText}>Credit </Text>
+								)}
+								<Text style={[styles.boldText, styles.stakeholderText]} numberOfLines={1}>
+									{item.stakeholder}
+								</Text>
+							</>
+						</MaskingText>
 					</View>
-					<View style={styles.rightColumn}>
-						<View style={styles.amountContainer}>
-							{item.type === "debit" ? (
-								<Text style={[styles.boldText, { color: tintColorLight }]}>+</Text>
-							) : (
-								<Text style={styles.boldText}>-</Text>
-							)}
-							<Text
-								style={[
-									styles.boldText,
-									styles.amountText,
-									{ color: item.type === "debit" ? tintColorLight : textColor },
-								]}
-							>
-								{item.amount.toFixed(2)}
-							</Text>
-						</View>
+
+					<View style={styles.descriptionContainer}>
+						<Text style={styles.descriptionText} numberOfLines={2}>
+							{item.description}
+						</Text>
 					</View>
 				</View>
-			</Pressable>
-		</Link>
+				<View style={styles.rightColumn}>
+					<View style={styles.amountContainer}>
+						<MaskingText>
+							<>
+								{item.type === "debit" ? (
+									<Text style={[styles.boldText, { color: tintColorLight }]}>+</Text>
+								) : (
+									<Text style={styles.boldText}>-</Text>
+								)}
+								<Text
+									style={[
+										styles.boldText,
+										styles.amountText,
+										{ color: item.type === "debit" ? tintColorLight : textColor },
+									]}
+								>
+									{item.amount.toFixed(2)}
+								</Text>
+							</>
+						</MaskingText>
+					</View>
+				</View>
+			</View>
+		</Pressable>
 	);
 };
 
@@ -115,7 +124,7 @@ const styles = StyleSheet.create({
 		marginBlockStart: Padding.xs,
 	},
 	descriptionText: {
-		fontSize: 14,
+		fontSize: 15,
 	},
 	rightColumn: {
 		flexDirection: "column",

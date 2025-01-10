@@ -1,17 +1,13 @@
 import { Text, View } from "@/components/themed";
 import { tintColorLight } from "@/constants/colors";
 import { Padding } from "@/constants/style";
-import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import MaskingText from "../masking-text";
 
 const BalanceCard = () => {
-	const [isVisible, setIsVisible] = useState(false);
 	const router = useRouter();
-	const toggleVisible = () => {
-		setIsVisible(!isVisible);
-	};
 	const navigateToTransaction = () => {
 		router.push("/transaction");
 	};
@@ -21,15 +17,12 @@ const BalanceCard = () => {
 			<View style={styles.balanceContainer}>
 				<View style={styles.amountContainer}>
 					<Text style={styles.amount}>RM</Text>
-					{isVisible ? <Text style={styles.amount}>1000.00</Text> : <Text style={styles.amount}>****</Text>}
+					<MaskingText style={styles.amount}>1000.00</MaskingText>
 				</View>
-				<Pressable onPress={toggleVisible}>
-					<FontAwesome5 name={isVisible ? "eye-slash" : "eye"} size={24} color="white" />
-				</Pressable>
 			</View>
 			<View style={styles.actionContainer}>
 				<TouchableOpacity style={styles.button}>
-					<Text style={styles.buttonText}>Reload</Text>
+					<Text style={[styles.buttonText, styles.reloadText]}>Reload</Text>
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.secondaryButton} onPress={navigateToTransaction}>
 					<Text style={styles.transactionHistoryText}>Transactions</Text>
@@ -106,5 +99,9 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent",
 		gap: 10,
 		marginTop: 8,
+	},
+	reloadText: {
+		color: tintColorLight,
+		marginInline: Padding.sm,
 	},
 });
