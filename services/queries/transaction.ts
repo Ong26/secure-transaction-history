@@ -1,7 +1,8 @@
 import { generateTransactionList } from "@/data/transaction";
+import { NetworkError, UnauthenticatedError } from "@/errors/network";
 import { TransactionListInfiniteQueryResult } from "@/types/transaction";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { LinkProps, useLocalSearchParams, usePathname } from "expo-router";
 
 const QUERY_KEY = "transaction";
 
@@ -41,7 +42,9 @@ export const useTransactionDetailQuery = () => {
 	const { guid } = useLocalSearchParams();
 	//use query client instead of refetching to prevent data renew
 	const queryClient = useQueryClient();
+	const pathname = usePathname() as LinkProps["href"];
 	return useQuery({
+		throwOnError: true,
 		queryKey: [QUERY_KEY, { type: "detail", guid }],
 		queryFn: async () => {
 			try {
@@ -52,9 +55,14 @@ export const useTransactionDetailQuery = () => {
 				const flattedTransaction = transactionListPages?.pages.flatMap((page) => page.data);
 				const transaction = flattedTransaction?.find((transaction) => transaction.guid === guid);
 				if (transaction?.id === 1) {
-					throw new Error("Transaction not found");
-				}
-				return transaction;
+					throw new NetworkError({ refetch: true });
+				} else if (transaction?.id === 2) {
+					throw new UnauthenticatedError({
+						redirectPath: "/login/page",
+						refetch: false,
+						actionText: "Login",
+					});
+				} else return transaction;
 			} catch (error) {
 				throw error;
 			}

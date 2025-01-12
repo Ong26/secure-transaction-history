@@ -14,15 +14,11 @@ import { useColorScheme } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-	const [loaded, error] = useFonts({
+	const [loaded] = useFonts({
 		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
 		...FontAwesome.font,
 	});
 	useAppStateAuth();
-
-	useEffect(() => {
-		if (error) throw error;
-	}, [error]);
 
 	useEffect(() => {
 		if (loaded) {

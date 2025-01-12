@@ -1,4 +1,4 @@
-import ErrorBoundaryComponent from "@/components/error-boundary";
+import ErrorBoundaryCapture from "@/components/error-boundary-capture";
 import MaskingText from "@/components/masking-text";
 import SecureMaskingFab from "@/components/secure-masking-fab";
 import Skeleton from "@/components/skeleton";
@@ -10,47 +10,47 @@ import { useTransactionDetailQuery } from "@/services/queries/transaction";
 import { format } from "date-fns";
 import React, { ReactNode } from "react";
 import { ScrollView, StyleSheet } from "react-native";
+
 const Detail = () => {
-	const { isLoading, data, error, refetch } = useTransactionDetailQuery();
+	const { isLoading, data } = useTransactionDetailQuery();
+
 	if (isLoading) return <Skeleton />;
 	return (
-		<ErrorBoundaryComponent error={error} refetch={refetch}>
-			<ScrollView style={styles.scrollView} bounces={false} contentContainerStyle={styles.scrollViewContent}>
-				<SecureMaskingFab />
-				<View style={styles.amountContainer}>
-					<MaskingText style={styles.amountText}>
-						{data?.type === "debit" ? (
-							<>
-								<Text style={[styles.amountText, { color: tintColorLight }]}>+</Text>
-								<Text style={[styles.amountText, { color: tintColorLight }]}>RM {data?.amount.toFixed(2)}</Text>
-							</>
-						) : (
-							<>
-								<Text style={[styles.amountText]}>-</Text>
-								<Text style={[styles.amountText]}>RM {data?.amount.toFixed(2)}</Text>
-							</>
-						)}
-					</MaskingText>
-				</View>
-				<View>
-					<DetailItem label="Date" value={data?.date && format(data?.date, "dd MMM yyyy HH:mm")} />
-					<DetailItem
-						label="Type"
-						value={<MaskingText style={styles.detailValue}>{data?.type && TransactionType[data?.type]}</MaskingText>}
-					/>
-					<DetailItem label="Status" value={data?.status && TransactionStatus[data?.status]} />
-					<DetailItem
-						label="Stakeholder"
-						value={<MaskingText style={styles.detailValue}>{data?.stakeholder}</MaskingText>}
-					/>
-					<DetailItem
-						label="Description"
-						value={<Text style={styles.descriptionText}>{data?.description}</Text>}
-						column
-					/>
-				</View>
-			</ScrollView>
-		</ErrorBoundaryComponent>
+		<ScrollView style={styles.scrollView} bounces={false} contentContainerStyle={styles.scrollViewContent}>
+			<SecureMaskingFab />
+			<View style={styles.amountContainer}>
+				<MaskingText style={styles.amountText}>
+					{data?.type === "debit" ? (
+						<>
+							<Text style={[styles.amountText, { color: tintColorLight }]}>+</Text>
+							<Text style={[styles.amountText, { color: tintColorLight }]}>RM {data?.amount.toFixed(2)}</Text>
+						</>
+					) : (
+						<>
+							<Text style={[styles.amountText]}>-</Text>
+							<Text style={[styles.amountText]}>RM {data?.amount.toFixed(2)}</Text>
+						</>
+					)}
+				</MaskingText>
+			</View>
+			<View>
+				<DetailItem label="Date" value={data?.date && format(data?.date, "dd MMM yyyy HH:mm")} />
+				<DetailItem
+					label="Type"
+					value={<MaskingText style={styles.detailValue}>{data?.type && TransactionType[data?.type]}</MaskingText>}
+				/>
+				<DetailItem label="Status" value={data?.status && TransactionStatus[data?.status]} />
+				<DetailItem
+					label="Stakeholder"
+					value={<MaskingText style={styles.detailValue}>{data?.stakeholder}</MaskingText>}
+				/>
+				<DetailItem
+					label="Description"
+					value={<Text style={styles.descriptionText}>{data?.description}</Text>}
+					column
+				/>
+			</View>
+		</ScrollView>
 	);
 };
 
@@ -68,8 +68,14 @@ const DetailItem = ({ label, value, column }: DetailItemProps) => {
 		</View>
 	);
 };
-
-export default Detail;
+const Page = () => {
+	return (
+		<ErrorBoundaryCapture>
+			<Detail />
+		</ErrorBoundaryCapture>
+	);
+};
+export default Page;
 
 const styles = StyleSheet.create({
 	scrollView: {
